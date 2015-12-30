@@ -9,7 +9,7 @@ init:
 	@terraform remote config \
 		-backend=S3 \
 		-backend-config="region=us-east-1" \
-		-backend-config="bucket=$(ENVIRONMENT)-greenlancer-useast1-terraform-state" \
+		-backend-config="bucket=$(ENVIRONMENT)-useast1-terraform-state" \
 		-backend-config="key=$(ENVIRONMENT).tfstate"
 	@terraform remote pull
 
