@@ -1,4 +1,4 @@
-.PHONEY: all
+.PHONY: all
 
 all:
 	@cat Makefile
@@ -13,7 +13,7 @@ init:
 		-backend-config="key=$(ENVIRONMENT).tfstate"
 	@terraform remote pull
 
-update: 
+update:
 	@terraform get -update=true &>/dev/null
 
 plan: init update
