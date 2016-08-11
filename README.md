@@ -2,7 +2,7 @@
 ## First steps
 View contents of the Makefile
 ```
-ENVIRONMENT=qa make
+make
 ```
 
 ## Planning
