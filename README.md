@@ -1,19 +1,17 @@
-# terraform-stuff
-
-## Basic Usage
-### First steps
+# Basic Usage
+## First steps
 View contents of the Makefile
 ```
 ENVIRONMENT=qa make
 ```
 
-### Planning
+## Planning
 Show a plan from the remote state
 ```
 ENVIRONMENT=qa make plan
 ```
 
-### Outputs
+## Outputs
 Show root level output
 ```
 ENVIRONMENT=qa make output
