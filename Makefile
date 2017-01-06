@@ -4,7 +4,7 @@ help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 init: ## Initializes the terraform remote state backend and pulls the correct environments state.
-	@if [ -z $(ENVIRONMENT) ]; then echo "ENVIRONMENT was not set" ; exit 10 ; fi
+	@if [ -z $(ENVIRONMENT) ]; then echo "ENVIRONMENT was not set" ; exit 1 ; fi
 	@rm -rf .terraform/*.tf*
 	@terraform remote config \
 		-backend=S3 \
@@ -25,7 +25,7 @@ plan-destroy: init update ## Shows what a destroy would do.
 show: init ## Shows a module
 	@terraform show -module-depth=-1
 
-graph: ## Runs the terraform grapher
+graph: init ## Runs the terraform grapher
 	@rm -f graph.png
 	@terraform graph -draw-cycles -module-depth=-1 | dot -Tpng > graph.png
 	@open graph.png
