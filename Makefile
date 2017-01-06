@@ -17,10 +17,10 @@ update: ## Gets any module updates
 	@terraform get -update=true &>/dev/null
 
 plan: init update ## Runs a plan. Note that in Terraform < 0.7.0 this can create state entries.
-	@terraform plan -input=false -refresh=true -module-depth=-1 -var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars
+	@terraform plan -input=true -refresh=true -module-depth=-1 -var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars
 
 plan-destroy: init update ## Shows what a destroy would do.
-	@terraform plan -input=false -refresh=true -module-depth=-1 -destroy -var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars
+	@terraform plan -input=true -refresh=true -module-depth=-1 -destroy -var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars
 
 show: init ## Shows a module
 	@terraform show -module-depth=-1
