@@ -8,7 +8,18 @@ This is my [terraform](https://www.terraform.io/) workflow for every terraform p
 
 View a description of Makefile targets with help via the [self-documenting makefile](https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html).
 
-    make
+    $ make
+    apply                          Apply builds/changes resources. You should ALWAYS run a plan first.
+    apply-target                   Apply a specific resource and any chained resources.
+    destroy                        Destroys everything. There is a prompt before destruction.
+    destroy-target                 Destroy a specific resource. Caution though, this destroys chained resources.
+    graph                          Output the `dot` graph of all the built Terraform resources
+    output                         Display all outputs from the remote state file.
+    plan-destroy                   Creates a destruction plan.
+    plan                           Display all the changes that Terraform is going to make.
+    plan-target                    Shows what a plan looks like for applying a specific resource
+    taint                          Taint a resource for destruction upon next `apply`
+    validate                       Runs `terraform validate` against all the .tf files
 
 Show a plan from the remote state
 
