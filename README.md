@@ -36,6 +36,29 @@ Plan it all
 	ENVIRONMENT=prod make plan
 
 - - - -
+# Example Terraform project layout
+
+    $ tree -F -l
+    terraform-my-project
+    ├── qa.tfvars                 <========= This comes from S3
+    ├── environments/
+    │   └── qa/                   <========= This stays in the git repo
+    │       └── qa.tfvars
+    ├── example_ENV.tfvars
+    ├── main.tf
+    ├── Makefile
+    ├── .gitignore
+    ├── .git/
+    ├── modules/
+    │   └── bastion/
+    │       ├── bastion.tf
+    │       └── init.sh
+    ├── README.md
+    └── LICENSE
+
+            5 directories, 10 files
+
+- - - -
 # Considerations
 
 * The terraform `.tfvars` files need to be present in S3 prior to using this. If you don't want to initially store variables in S3, simple remove each `-var-file=$(ENVIRONMENT).tfvars` line from `Makefile`
