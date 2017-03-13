@@ -48,6 +48,6 @@ Plan it all
 - - - -
 # Author Info and License
 
-[![Apache-2.0](LICENSE)
+![Apache-2.0](LICENSE)
 
 (C) [Philip Porada](https://github.com/pgporada/) - philporada@gmail.com
