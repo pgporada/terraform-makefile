@@ -24,11 +24,65 @@ View a description of Makefile targets with help via the [self-documenting makef
 Show a plan from the remote state
 
     ENVIRONMENT=qa make plan
-    ENVIRONMENT=prod make plan
+
+    $ ENVIRONMENT=qa make plan
+	Removing existing ENVIRONMENT-TIER.tfvars from local directory
+
+	Pulling fresh qa.tfvars from s3://prod-useast1-terraform-state/bastion/
+	download: s3://prod-useast1-terraform-state/bastion/qa.tfvars to ./qa.tfvars
+	Initialized blank state with remote state enabled!
+	Remote state configured and pulled.
+	Local and remote state in sync
+	Refreshing Terraform state in-memory prior to plan...
+	The refreshed state will be used to calculate this plan, but
+	will not be persisted to local or remote state storage.
+
+	-/+ module.bastion.aws_instance.bastion
+    ami:                               "ami-61ce6c77" => "ami-35ab0823" (forces new resource)
+    associate_public_ip_address:       "true" => "<computed>"
+    availability_zone:                 "us-east-1a" => "<computed>"
+    ebs_block_device.#:                "0" => "<computed>"
+    ephemeral_block_device.#:          "0" => "<computed>"
+    iam_instance_profile:              "qa-bastion-instance-profile" => "qa-bastion-instance-profile"
+    instance_state:                    "running" => "<computed>"
+    instance_type:                     "t2.micro" => "t2.micro"
+    ipv6_addresses.#:                  "0" => "<computed>"
+    key_name:                          "qa_useast1_ec2key_bastion" => "qa_useast1_ec2key_bastion"
+    network_interface_id:              "eni-d00c2017" => "<computed>"
+    placement_group:                   "" => "<computed>"
+    private_dns:                       "ip-10-10-10-24.ec2.internal" => "<computed>"
+    private_ip:                        "10.10.10.24" => "<computed>"
+    public_dns:                        "ec2-52.52.52.52.compute-1.amazonaws.com" => "<computed>"
+    public_ip:                         "52.52.52.52" => "<computed>"
+    root_block_device.#:               "1" => "<computed>"
+    security_groups.#:                 "0" => "<computed>"
+    source_dest_check:                 "true" => "true"
+    subnet_id:                         "subnet-184a8440" => "subnet-184a8440"
+    tags.%:                            "6" => "6"
+    tags.ENV:                          "qa" => "qa"
+    tags.Name:                         "qa_useast1_bastion" => "qa_useast1_bastion"
+    tags.ROLES:                        "bastion" => "bastion"
+    tags.TERRAFORM:                    "true" => "true"
+    tags.TIER:                         "ga" => "ga"
+    tags.TYPE:                         "bastion" => "bastion"
+    tenancy:                           "default" => "<computed>"
+    user_data:                         "1d902c0382fe19b53225a527fdc7bc95cfed875T" => "1d902c0382fe19b53225a527fdc7bc95cfed875T"
+    vpc_security_group_ids.#:          "1" => "1"
+    vpc_security_group_ids.1449472535: "sg-305ea24b" => "sg-305ea24b"
+
+	~ module.bastion.aws_route53_record.bastion-priv
+    records.#: "" => "<computed>"
+
+	~ module.bastion.aws_route53_record.bastion-pub
+    records.#: "" => "<computed>"
+
+	Plan: 1 to add, 2 to change, 1 to destroy.
 
 Show root level output
 
     ENVIRONMENT=qa make output
+	# Alternatively once you've run the make output, you can just run
+	terraform output
 
 Output a module
 
