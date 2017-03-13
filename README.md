@@ -125,7 +125,7 @@ Tree output of a Terraform module I create
 
             5 directories, 10 files
 
-Example main.tf inside the tree
+Example `main.tf` inside the tree
 
     variable "region" {}
 
