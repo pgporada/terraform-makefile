@@ -28,8 +28,8 @@ Show a plan from the remote state
     $ ENVIRONMENT=qa make plan
 	Removing existing ENVIRONMENT-TIER.tfvars from local directory
 
-	Pulling fresh qa.tfvars from s3://prod-useast1-terraform-state/bastion/
-	download: s3://prod-useast1-terraform-state/bastion/qa.tfvars to ./qa.tfvars
+	Pulling fresh qa.tfvars from s3://qa-useast1-terraform-state/bastion/
+	download: s3://qa-useast1-terraform-state/bastion/qa.tfvars to ./qa.tfvars
 	Initialized blank state with remote state enabled!
 	Remote state configured and pulled.
 	Local and remote state in sync
@@ -103,8 +103,10 @@ Plan it all
 - - - -
 # Example Terraform project layout
 
+Tree output of a Terraform module I create
+
     $ tree -F -l
-    terraform-my-project
+    terraform-bastion
     ├── qa.tfvars                 <========= This comes from S3
     ├── environments/
     │   └── qa/                   <========= This stays in the git repo
@@ -122,6 +124,81 @@ Plan it all
     └── LICENSE
 
             5 directories, 10 files
+
+Example main.tf inside the tree
+
+    variable "region" {}
+
+    variable "env" {
+      default = "qa"
+    }
+    variable "key_path" {}
+    variable "key_name" {}
+    variable "ec2_bastion_instance_type" {}
+    variable "ec2_bastion_user" {}
+
+    terraform {
+      required_version = ">= 0.8.8"
+    }
+
+    provider "aws" {
+      region              = "${var.region}"
+      profile             = "${var.env}"
+      allowed_account_ids = ["YOUR_ACCOUNT_ID"]
+    }
+
+    data "terraform_remote_state" "vpc" {
+      backend = "s3"
+
+      config {
+        region     = "${var.region}"
+        bucket     = "qa-useast1-terraform-state"
+        key        = "bastion/${var.env}.tfstate"
+        profile    = "${var.env}"
+        acl        = "private"
+      }
+    }
+
+    module "bastion" {
+      source           = "modules/bastion"
+      env              = "${var.env}"
+      region           = "${var.region}"
+      instance_type    = "${var.ec2_bastion_instance_type}"
+      bastion_key_name = "${var.key_name}"
+      bastion_key_path = "${var.key_path}"
+      vpc_id           = "${data.terraform_remote_state.vpc.vpc_id}"
+      vpc_cidr         = "${data.terraform_remote_state.vpc.vpc_cidr}"
+      subnet_ids       = "${data.terraform_remote_state.vpc.public_subnet_ids}"
+      shell_username   = "${var.ec2_bastion_user}"
+    }
+
+    output "environment" {
+      value = "${var.env}"
+    }
+
+    output "bastion_public_ip" {
+      value = "${module.bastion.public_ip}"
+    }
+
+    output "bastion_private_ip" {
+      value = "${module.bastion.private_ip}"
+    }
+
+    output "bastion_user" {
+      value = "${var.ec2_bastion_user}"
+    }
+
+    output "bastion_ami_image_id" {
+      value = "${module.bastion.ami_image_id}"
+    }
+
+    output "bastion_ami_creation_date" {
+      value = "${module.bastion.ami_creation_date}"
+    }
+
+    output "bastion_ami_name" {
+      value = "${module.bastion.ami_name}"
+    }
 
 - - - -
 # Considerations
