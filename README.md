@@ -1,7 +1,9 @@
 # Overview: terraform-makefile
 [![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-TF_version--0.8.8-blue.svg)](LICENSE)
 
 This is my [terraform](https://www.terraform.io/) workflow for every terraform project that I use personally/professionaly.
+
 
 - - - -
 # Usage
@@ -20,6 +22,8 @@ View a description of Makefile targets with help via the [self-documenting makef
     plan-target                    Shows what a plan looks like for applying a specific resource
     taint                          Taint a resource for destruction upon next `apply`
     validate                       Runs `terraform validate` against all the .tf files
+
+* Before each target, several private Makefile functions run to configure the remote state backend, `validate`,`set-env`, and `init`. You should never have to run these yourself.
 
 Show a plan from the remote state
 
