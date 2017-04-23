@@ -4,6 +4,12 @@
 
 This is my [terraform](https://www.terraform.io/) workflow for every terraform project that I use personally/professionaly.
 
+- - - -
+
+# Upgrading from Terraform 0.8.x to 0.9.x and using this project
+
+[You will need to follow this doc](https://www.terraform.io/docs/backends/legacy-0-8.html) to prep your own Terraform code to function with this project.
+
 
 - - - -
 # Usage
