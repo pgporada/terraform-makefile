@@ -6,7 +6,12 @@ This is my [terraform](https://www.terraform.io/) workflow for every terraform p
 
 - - - -
 
-# Upgrading from Terraform 0.8.x to 0.9.x and using this project
+# Notes
+
+### Environments
+Terraform 0.9.x has a new feature `terraform env`. This `Makefile` does __not__ use the env feature of Terraform. What this project currently assumes you do is put your each of your evironments remote state in a distinct directory per environment.
+
+### Upgrading from Terraform 0.8.x to 0.9.x
 
 [You will need to follow this doc](https://www.terraform.io/docs/backends/legacy-0-8.html) to prep your own Terraform code to function with this project. This issue [may help you with your own Terraform code](https://github.com/hashicorp/terraform/pull/12067#issuecomment-287258989) configs as well.
 
