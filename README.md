@@ -1,6 +1,6 @@
 # Overview: terraform-makefile
 [![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen.svg)](LICENSE)
-[![License](https://img.shields.io/badge/supports-TF_version-->=0.8.8-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/supports%20TF_version%20>=0.8.8-blue.svg)](LICENSE)
 
 This is my [terraform](https://www.terraform.io/) workflow for every terraform project that I use personally/professionaly.
 
