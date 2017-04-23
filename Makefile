@@ -46,7 +46,8 @@ init: validate set-env
 	@terraform init \
 		-backend-config="region=us-east-1" \
 		-backend-config="bucket=$(ENVIRONMENT)-useast1-terraform-state" \
-		-backend-config="key=$(BUCKETKEY)/$(ENVIRONMENT).tfstate" && \
+		-backend-config="key=$(BUCKETKEY)/$(ENVIRONMENT).tfstate"
+	@echo "Your environment: $$(terraform env list | grep '^\*' | awk '{print $$2}')"
 
 update:
 	@terraform get -update=true 1>/dev/null
