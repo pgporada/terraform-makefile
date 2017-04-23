@@ -43,13 +43,10 @@ set-env:
 	@aws s3 cp s3://$(ENVIRONMENT)-useast1-terraform-state/$(BUCKETKEY)/$(ENVIRONMENT).tfvars .
 
 init: validate set-env
-	@rm -rf .terraform/*.tf*
-	@terraform remote config \
-		-backend=S3 \
+	@terraform init \
 		-backend-config="region=us-east-1" \
 		-backend-config="bucket=$(ENVIRONMENT)-useast1-terraform-state" \
 		-backend-config="key=$(BUCKETKEY)/$(ENVIRONMENT).tfstate" && \
-	@terraform remote pull
 
 update:
 	@terraform get -update=true 1>/dev/null
@@ -94,8 +91,7 @@ apply: init update ## Apply builds/changes resources. You should ALWAYS run a pl
 		-input=true \
 		-refresh=true \
 		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-		-var-file=$(ENVIRONMENT).tfvars && \
-	terraform remote push
+		-var-file=$(ENVIRONMENT).tfvars
 
 apply-target: init update ## Apply a specific resource and any chained resources.
 	@tput setaf 3; tput bold; echo -n "[INFO]   "; tput sgr0; echo "Specifically APPLY a piece of Terraform data."
@@ -108,8 +104,7 @@ apply-target: init update ## Apply a specific resource and any chained resources
 			-refresh=true \
 			-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
 			-var-file=$(ENVIRONMENT).tfvars \
-			-target=$$DATA \
-		terraform remote push
+			-target=$$DATA
 
 output: init update ## Display all outputs from the remote state file.
 	@echo "Example to type for the module: MODULE=module.rds.aws_route53_record.rds-master"
@@ -127,15 +122,13 @@ taint: init update ## Taint a resource for destruction upon next `apply`
 		terraform taint \
 			-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
 			-var-file=$(ENVIRONMENT).tfvars \
-			-module=$$MODULE $$RESOURCE && \
-		terraform remote push
+			-module=$$MODULE $$RESOURCE
 	@echo "You will now want to run a plan to see what changes will take place"
 
 destroy: init update ## Destroys everything. There is a prompt before destruction.
 	@terraform destroy \
 		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-		-var-file=$(ENVIRONMENT).tfvars && \
-	terraform remote push
+		-var-file=$(ENVIRONMENT).tfvars
 
 destroy-target: init update ## Destroy a specific resource. Caution though, this destroys chained resources.
 	@echo "Specifically destroy a piece of Terraform data."
@@ -146,5 +139,4 @@ destroy-target: init update ## Destroy a specific resource. Caution though, this
 		terraform destroy \
 		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
 		-var-file=$(ENVIRONMENT).tfvars \
-		-target=$$DATA && \
-	terraform remote push
+		-target=$$DATA
