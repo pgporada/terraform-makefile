@@ -13,54 +13,82 @@
 # limitations under the License.
 
 .ONESHELL:
-SHELL := /bin/bash
-.PHONY: help
-
-# Strips 'terraform-' from the folder name and uses this as the storage folder in S3.
-# I create all my terraform projects in the following format. terraform-vpc, terraform-my-app, terraform-your-app
-BUCKETKEY = $(shell basename "$$(pwd)" | sed 's/terraform-//')
+.SHELL := /bin/bash
+.PHONY: plan apply destroy prep help set-env
+VARS="variables/$(REGION)-$(ENV).tfvars"
+CURRENT_FOLDER=$(shell basename "$$(pwd)")
+BOLD=$(shell tput bold)
+RED=$(shell tput setaf 1)
+RESET=$(shell tput sgr0)
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-validate: ## Runs `terraform validate` against all the .tf files
-	@for i in $$(find -type f -name "*.tf" -exec dirname {} \;); do \
-		terraform validate "$$i"; \
-		if [ $$? -ne 0 ]; then \
-			echo "Failed Terraform file validation on file $${i}"; \
-			echo; \
-			exit 1; \
-		fi; \
-	done
-
 set-env:
-	@if [ -z $(ENVIRONMENT) ]; then\
-		 echo "ENVIRONMENT was not set"; exit 10;\
+	@if [ -z $(ENV) ]; then\
+		echo "$(BOLD)$(RED)ENV was not set$(RESET)"; \
+		ERROR=1; \
 	 fi
-	@echo "\nRemoving existing ENVIRONMENT.tfvars from local directory"
-	@find . -maxdepth 1 -type f -name '*.tfvars' ! -name example_ENV.tfvars -exec rm -f {} \;
-	@echo "\nPulling fresh $(ENVIRONMENT).tfvars from s3://$(ENVIRONMENT)-useast1-terraform-state/$(BUCKETKEY)/"
-	@aws s3 cp s3://$(ENVIRONMENT)-useast1-terraform-state/$(BUCKETKEY)/$(ENVIRONMENT).tfvars .
+	#####
+	@if [ -z $(REGION) ]; then\
+		echo "$(BOLD)$(RED)REGION was not set$(RESET)"; \
+		ERROR=1; \
+	 fi
+	#####
+	@if [ -z $(AWS_PROFILE) ]; then\
+		echo "$(BOLD)$(RED)AWS_PROFILE was not set.$(RESET)"; \
+		ERROR=1; \
+	 fi
+	#####
+	@if [ ! -z $${ERROR} ] && [ $${ERROR} -eq 1 ]; then
+		echo "$(BOLD)Example usage: \`AWS_PROFILE=whatever ENV=demo REGION=us-east-2 make plan\`$(RESET)"; \
+		exit 1; \
+	 fi
+	#####c
+	@if [ ! -f "$(VARS)" ]; then \
+		echo "$(BOLD)$(RED)Could not find variables file: $(VARS)$(RESET)"; \
+		exit 1; \
+	 fi
 
-init: validate set-env
-	@terraform init \
-		-backend-config="region=us-east-1" \
-		-backend-config="bucket=$(ENVIRONMENT)-useast1-terraform-state" \
-		-backend-config="key=$(BUCKETKEY)/$(ENVIRONMENT).tfstate"
-	@echo "Your environment: $$(terraform env list | grep '^\*' | awk '{print $$2}')"
+prep: set-env ## Prepare a new workspace (environment) if needed, configure the tfstate backend, update any modules, and switch to the workspace
+	@echo "$(BOLD)Verifying that the S3 bucket remote state bucket exists$(RESET)"
+	@aws --profile $(AWS_PROFILE) s3api head-bucket --region $(REGION) --bucket $(REGION)-terraform > /dev/null 2>&1
+	@if [ $$? -ne 0 ]; then \
+		echo "$(BOLD)S3 Bucket was not found, creating new bucket with versioning enabled to store tfstate$(RESET)"; \
+		aws --profile $(AWS_PROFILE) s3api create-bucket \
+			--bucket $(REGION)-terraform \
+			--acl private \
+			--region $(REGION) \
+			--create-bucket-configuration LocationConstraint=$(REGION); \
+		echo; \
+		aws --profile $(AWS_PROFILE) s3api put-bucket-versioning \
+			--bucket $(REGION)-terraform \
+			--versioning-configuration Status=Enabled; \
+	 fi
+	#####
+	@echo "$(BOLD)Configuring the terraform backend$(RESET)"
+	@echo "yes" | terraform init \
+		-backend-config="profile=$(AWS_PROFILE)" \
+		-backend-config="region=$(REGION)" \
+		-backend-config="bucket=$(REGION)-terraform" \
+		-backend-config="key=$(CURRENT_FOLDER)/$(ENV)/terraform.tfstate"
+	#####
+	@if [ ! -d terraform.tfstate.d/aws_$(REGION) ]; then \
+		echo "$(BOLD)Configuring the terraform workspace$(RESET)"; \
+		terraform workspace new aws_$(REGION)_$(ENV); \
+	 fi
+	#####
+	@echo "$(BOLD)Switching to workspace $(REGION)_$(ENV)$(RESET)"
+	@echo "yes" | terraform workspace select aws_$(REGION)_$(ENV)
+	#####
+	@echo "$(BOLD)Updating TF modules$(RESET)"
+	@terraform get -update=true
+	@echo
 
-update:
-	@terraform get -update=true 1>/dev/null
+plan: prep ## Show what terraform thinks it will do
+	@terraform plan -var-file="$(VARS)" -lock=false
 
-plan: init update ## Display all the changes that Terraform is going to make.
-	@terraform plan \
-		-input=false \
-		-refresh=true \
-		-module-depth=-1 \
-		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-		-var-file=$(ENVIRONMENT).tfvars
-
-plan-target: init update ## Shows what a plan looks like for applying a specific resource
+plan-target: prep ## Shows what a plan looks like for applying a specific resource
 	@tput setaf 3; tput bold; echo -n "[INFO]   "; tput sgr0; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
 	@read -p "PLAN target: " DATA &&\
 		terraform plan \
@@ -76,68 +104,22 @@ plan-destroy: init update ## Creates a destruction plan.
 		-refresh=true \
 		-module-depth=-1 \
 		-destroy \
-		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-		-var-file=$(ENVIRONMENT).tfvars
+		-var-file=$(VARS) \
+		-lock=false
 
-show: init
-	@terraform show -module-depth=-1
+apply: prep ## Have terraform do the things. This will cost money.
+	@terraform apply -var-file="$(VARS)" -lock=false
 
-graph: ## Output the `dot` graph of all the built Terraform resources
-	@rm -f graph.png
-	@terraform graph -draw-cycles -module-depth=-1 | dot -Tpng > graph.png
-	@shotwell graph.png
+destroy: prep ## Destroy the things
+	@terraform destroy -var-file="$(VARS)" -lock=false
 
-apply: init update ## Apply builds/changes resources. You should ALWAYS run a plan first.
-	@terraform apply \
-		-input=true \
-		-refresh=true \
-		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-		-var-file=$(ENVIRONMENT).tfvars
-
-apply-target: init update ## Apply a specific resource and any chained resources.
-	@tput setaf 3; tput bold; echo -n "[INFO]   "; tput sgr0; echo "Specifically APPLY a piece of Terraform data."
-	@tput setaf 3; tput bold; echo -n "[INFO]   "; tput sgr0; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
-	@tput setaf 1; tput bold; echo -n "[DANGER] "; tput sgr0; echo "You are about to apply a new state."
-	@tput setaf 1; tput bold; echo -n "[DANGER] "; tput sgr0; echo "This has the potential to break your infrastructure."
-	@read -p "APPLY target: " DATA &&\
-		terraform apply \
-			-input=true \
-			-refresh=true \
-			-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-			-var-file=$(ENVIRONMENT).tfvars \
-			-target=$$DATA
-
-output: init update ## Display all outputs from the remote state file.
-	@echo "Example to type for the module: MODULE=module.rds.aws_route53_record.rds-master"
-	@echo
-	@if [ -z $(MODULE) ]; then\
-		terraform output;\
-	 else\
-		terraform output -module=$(MODULE);\
-	 fi
-
-taint: init update ## Taint a resource for destruction upon next `apply`
-	@echo "Tainting involves specifying a module and a resource"
-	@read -p "Module: " MODULE && \
-		read -p "Resource: " RESOURCE && \
-		terraform taint \
-			-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-			-var-file=$(ENVIRONMENT).tfvars \
-			-module=$$MODULE $$RESOURCE
-	@echo "You will now want to run a plan to see what changes will take place"
-
-destroy: init update ## Destroys everything. There is a prompt before destruction.
-	@terraform destroy \
-		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-		-var-file=$(ENVIRONMENT).tfvars
-
-destroy-target: init update ## Destroy a specific resource. Caution though, this destroys chained resources.
+destroy-target: prep ## Destroy a specific resource. Caution though, this destroys chained resources.
 	@echo "Specifically destroy a piece of Terraform data."
 	@echo
 	@echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
 	@echo
 	@read -p "Destroy target: " DATA &&\
 		terraform destroy \
-		-var-file=environments/$(ENVIRONMENT)/$(ENVIRONMENT).tfvars \
-		-var-file=$(ENVIRONMENT).tfvars \
-		-target=$$DATA
+		-var-file=$(VARS) \
+		-target=$$DATA \
+        -lock=false

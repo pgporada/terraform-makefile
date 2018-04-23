@@ -1,55 +1,13 @@
 # Overview: terraform-makefile
-![TF](https://img.shields.io/badge/Supports%20Terraform%20Version-%3E%3D0.9.3-blue.svg)
+![TF](https://img.shields.io/badge/Supports%20Terraform%20Version-%3E%3D0.11.7-blue.svg)
 [![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen.svg)](LICENSE)
 
 This is my [terraform](https://www.terraform.io/) workflow for every terraform project that I use personally/professionaly. If you've never heard of Terraform, may I suggest [checking out my Ansible role](https://github.com/pgporada/ansible-role-terraform) to download, verify, and install Terraform for you!
 
 - - - -
-
-# Notes
-
-### Environments
-Terraform 0.9.x has a new feature `terraform env`. This `Makefile` does __not__ use the env feature of Terraform. What this project currently assumes you do is put your each of your evironments remote state in a distinct directory per environment.
-
-### Upgrading from Terraform 0.8.x to 0.9.x
-
-[You will need to follow this doc](https://www.terraform.io/docs/backends/legacy-0-8.html) to prep your own Terraform code to function with this project. This issue [may help you with your own Terraform code](https://github.com/hashicorp/terraform/pull/12067#issuecomment-287258989) configs as well.
-
-When everything is working successfully, you should see output like below
-```
-$ ENVIRONMENT=prod make plan
-
-Removing existing ENVIRONMENT.tfvars from local directory
-
-Pulling fresh prod.tfvars from s3://mystatebucket/terraform/bastion/
-download: s3://mystatebucket/terraform/bastion/prod.tfvars to ./prod.tfvars
-Downloading modules (if any)...
-Get: file:///home/phil/work-repos/prod/terraform-bastion/modules/bastion
-Initializing the backend...
-New backend configuration detected with legacy remote state!
-
-Terraform has detected that you're attempting to configure a new backend.
-At the same time, legacy remote state configuration was found. Terraform will
-first configure the new backend, and then ask if you'd like to migrate
-your remote state to the new backend.
-
-
-Do you want to copy the legacy remote state from "s3"?
-  Terraform can copy the existing state in your legacy remote state
-    backend to your newly configured backend. Please answer "yes" or "no".
-
-      Enter a value: yes
-
-
-
-      Successfully configured the backend "s3"! Terraform will automatically
-      use this backend unless the backend configuration changes.
-
-      Terraform has been successfully initialized!
-```
-
-- - - -
 # Usage
+
+**Note - this could be out of date.**
 
 View a description of Makefile targets with help via the [self-documenting makefile](https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html).
 
