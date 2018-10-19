@@ -40,7 +40,7 @@ set-env:
 		ERROR=1; \
 	 fi
 	#####
-	@if [ ! -z $${ERROR} ] && [ $${ERROR} -eq 1 ]; then
+	@if [ ! -z $${ERROR} ] && [ $${ERROR} -eq 1 ]; then \
 		echo "$(BOLD)Example usage: \`AWS_PROFILE=whatever ENV=demo REGION=us-east-2 make plan\`$(RESET)"; \
 		exit 1; \
 	 fi
