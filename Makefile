@@ -123,14 +123,12 @@ plan-destroy: init update ## Creates a destruction plan.
 
 apply: prep ## Have terraform do the things. This will cost money.
 	@terraform apply \
-		-auto-approve \
 		-input=false \
 		-refresh=true \
 		-var-file="$(VARS)"
 
 destroy: prep ## Destroy the things
 	@terraform destroy \
-		-auto-approve \
 		-input=false \
 		-refresh=true \
 		-var-file="$(VARS)"
@@ -139,7 +137,6 @@ destroy-target: prep ## Destroy a specific resource. Caution though, this destro
 	@echo "$(YELLOW)$(BOLD)[INFO] Specifically destroy a piece of Terraform data.$(RESET)"; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
 	@read -p "Destroy target: " DATA && \
 		terraform destroy \
-		-auto-approve \
 		-input=false \
 		-refresh=true \
 		-var-file=$(VARS) \
