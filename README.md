@@ -7,6 +7,8 @@ This is my [terraform](https://www.terraform.io/) workflow for every terraform p
 - - - -
 # Usage
 
+* Keeps state in S3 and utilizes DynamoDB for locking.
+
 **Note - this could be out of date.**
 
 View a description of Makefile targets with help via the [self-documenting makefile](https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html).
