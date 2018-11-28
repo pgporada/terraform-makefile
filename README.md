@@ -205,12 +205,10 @@ Example `main.tf` inside the tree
 - - - -
 # Considerations
 
-* The terraform `.tfvars` files need to be present in S3 prior to using this. If you don't want to initially store variables in S3, simple remove each `-var-file=$(ENV).tfvars` line from `Makefile`
 * Each time this makefile is used, the remote state will be pulled from the backend onto your machine. This can result in slightly longer iteration times.
-* There is no locking mechanism, so communication between team members using this is critical.
 * The makefile uses `.ONESHELL` which is a feature of gmake. OSX users may need to `brew install gmake`.
 * To use `ENV=qa make graph`, you will need to install `dot` via your systems package manager.
-* You should configure [remote state encryption for S3 via KMS](https://www.terraform.io/docs/state/remote/s3.html) via `encrypt` and `kms_key_id`.
+* You should configure [remote state encryption for S3 via KMS](https://www.terraform.io/docs/state/remote/s3.html) via `encrypt` and `kms_key_id`. This is a `TODO` and should be automated by the Makefile.
 
 - - - -
 # Author Info and License
