@@ -14,26 +14,22 @@ This is my [terraform](https://www.terraform.io/) workflow for every terraform p
 View a description of Makefile targets with help via the [self-documenting makefile](https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html).
 
     $ make
-    apply                          Apply builds/changes resources. You should ALWAYS run a plan first.
-    apply-target                   Apply a specific resource and any chained resources.
-    destroy                        Destroys everything. There is a prompt before destruction.
+    apply                          Have terraform do the things. This will cost money.
+    destroy-backend                Destroy S3 bucket and DynamoDB table
+    destroy                        Destroy the things
     destroy-target                 Destroy a specific resource. Caution though, this destroys chained resources.
-    graph                          Output the `dot` graph of all the built Terraform resources
-    output                         Display all outputs from the remote state file.
     plan-destroy                   Creates a destruction plan.
-    plan                           Display all the changes that Terraform is going to make.
+    plan                           Show what terraform thinks it will do
     plan-target                    Shows what a plan looks like for applying a specific resource
-    taint                          Taint a resource for destruction upon next `apply`
-    validate                       Runs `terraform validate` against all the .tf files
+    prep                           Prepare a new workspace (environment) if needed, configure the tfstate backend, update any modules, and switch to the workspace
+
 
 * Before each target, several private Makefile functions run to configure the remote state backend, `validate`,`set-env`, and `init`. You should never have to run these yourself.
 
 Show a plan from the remote state
 
-    ENVIRONMENT=qa make plan
-
-    $ ENVIRONMENT=qa make plan
-	Removing existing ENVIRONMENT-TIER.tfvars from local directory
+    $ ENV=qa make plan
+	Removing existing ENV.tfvars from local directory
 
 	Pulling fresh qa.tfvars from s3://qa-useast1-terraform-state/bastion/
 	download: s3://qa-useast1-terraform-state/bastion/qa.tfvars to ./qa.tfvars
@@ -70,7 +66,6 @@ Show a plan from the remote state
     tags.Name:                         "qa_useast1_bastion" => "qa_useast1_bastion"
     tags.ROLES:                        "bastion" => "bastion"
     tags.TERRAFORM:                    "true" => "true"
-    tags.TIER:                         "ga" => "ga"
     tags.TYPE:                         "bastion" => "bastion"
     tenancy:                           "default" => "<computed>"
     user_data:                         "1d902c0382fe19b53225a527fdc7bc95cfed875T" => "1d902c0382fe19b53225a527fdc7bc95cfed875T"
@@ -87,25 +82,25 @@ Show a plan from the remote state
 
 Show root level output
 
-    ENVIRONMENT=qa make output
+    ENV=qa make output
 	# Alternatively once you've run the make output, you can just run
 	terraform output
 
 Output a module
 
-    MODULE=network ENVIRONMENT=qa make output
+    MODULE=network ENV=qa make output
 
 Output a nested module
 
-    MODULE=network.nat ENVIRONMENT=qa make output
+    MODULE=network.nat ENV=qa make output
 
 Plan a specific module
 
-	ENVIRONMENT=prod make plan-target
+	ENV=prod make plan-target
 
 Plan it all
 
-	ENVIRONMENT=prod make plan
+	ENV=prod make plan
 
 - - - -
 # Example Terraform project layout
@@ -145,7 +140,7 @@ Example `main.tf` inside the tree
     variable "ec2_bastion_user" {}
 
     terraform {
-      required_version = ">= 0.8.8"
+      required_version = ">= 0.11.10"
     }
 
     provider "aws" {
@@ -210,11 +205,11 @@ Example `main.tf` inside the tree
 - - - -
 # Considerations
 
-* The terraform `.tfvars` files need to be present in S3 prior to using this. If you don't want to initially store variables in S3, simple remove each `-var-file=$(ENVIRONMENT).tfvars` line from `Makefile`
+* The terraform `.tfvars` files need to be present in S3 prior to using this. If you don't want to initially store variables in S3, simple remove each `-var-file=$(ENV).tfvars` line from `Makefile`
 * Each time this makefile is used, the remote state will be pulled from the backend onto your machine. This can result in slightly longer iteration times.
 * There is no locking mechanism, so communication between team members using this is critical.
 * The makefile uses `.ONESHELL` which is a feature of gmake. OSX users may need to `brew install gmake`.
-* To use `ENVIRONMENT=qa make graph`, you will need to install `dot` via your systems package manager.
+* To use `ENV=qa make graph`, you will need to install `dot` via your systems package manager.
 * You should configure [remote state encryption for S3 via KMS](https://www.terraform.io/docs/state/remote/s3.html) via `encrypt` and `kms_key_id`.
 
 - - - -
