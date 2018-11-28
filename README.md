@@ -136,6 +136,8 @@ Example `main.tf` inside the tree
     variable "key_name" {}
     variable "ec2_bastion_instance_type" {}
     variable "ec2_bastion_user" {}
+    variable "accountid" {}
+    variable "profile" {}
 
     terraform {
       required_version = ">= 0.11.10"
@@ -144,20 +146,20 @@ Example `main.tf` inside the tree
     provider "aws" {
       region              = "${var.region}"
       profile             = "${var.env}"
-      allowed_account_ids = ["YOUR_ACCOUNT_ID"]
+      allowed_account_ids = ["${var.accountid}"]
     }
 
     data "terraform_remote_state" "vpc" {
       backend = "s3"
 
       // This must map to the workspace from the Makefile
-      workspace = "${var.env}-${var.aws_region}"
+      workspace = "${var.env}-${var.region}"
 
       // This must map to the bucket and key from the Makefile
       config {
         region         = "${var.region}"
         acl            = "private"
-        profile        = "${var.aws_profile}"
+        profile        = "${var.profile}"
         bucket         = "${var.env}-${var.region}-yourCompany-terraform"
         key            = "${var.env}/vpc/terraform.tfstate"
         dynamodb_table = "${var.env}-${var.region}-yourCompany-terraform"
