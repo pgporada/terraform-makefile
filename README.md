@@ -1,5 +1,5 @@
 # Overview: terraform-makefile
-![TF](https://img.shields.io/badge/Supports%20Terraform%20Version-%3E%3D0.11.7-blue.svg)
+![TF](https://img.shields.io/badge/Supports%20Terraform%20Version-%3E%3D0.11.10-blue.svg)
 [![License](https://img.shields.io/badge/license-Apache--2.0-brightgreen.svg)](LICENSE)
 
 This is my [terraform](https://www.terraform.io/) workflow for every terraform project that I use personally/professionaly. If you've never heard of Terraform, may I suggest [checking out my Ansible role](https://github.com/pgporada/ansible-role-terraform) to download, verify, and install Terraform for you!
