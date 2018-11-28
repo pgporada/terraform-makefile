@@ -109,11 +109,9 @@ Tree output of a Terraform module I create
 
     $ tree -F -l
     terraform-bastion
-    ├── qa.tfvars                 <========= This comes from S3
-    ├── environments/
-    │   └── qa/                   <========= This stays in the git repo
-    │       └── qa.tfvars
-    ├── example_ENV.tfvars
+    ├── variables/
+    │   ├── prod-us-east-2.tfvars
+    │   └── qa-us-east-1.tfvars
     ├── main.tf
     ├── Makefile
     ├── .gitignore
@@ -152,12 +150,17 @@ Example `main.tf` inside the tree
     data "terraform_remote_state" "vpc" {
       backend = "s3"
 
+      // This must map to the workspace from the Makefile
+      workspace = "${var.env}-${var.aws_region}"
+
+      // This must map to the bucket and key from the Makefile
       config {
-        region     = "${var.region}"
-        bucket     = "qa-useast1-terraform-state"
-        key        = "bastion/${var.env}.tfstate"
-        profile    = "${var.env}"
-        acl        = "private"
+        region         = "${var.region}"
+        acl            = "private"
+        profile        = "${var.aws_profile}"
+        bucket         = "${var.env}-${var.region}-yourCompany-terraform"
+        key            = "${var.env}/vpc/terraform.tfstate"
+        dynamodb_table = "${var.env}-${var.region}-yourCompany-terraform"
       }
     }
 
@@ -188,18 +191,6 @@ Example `main.tf` inside the tree
 
     output "bastion_user" {
       value = "${var.ec2_bastion_user}"
-    }
-
-    output "bastion_ami_image_id" {
-      value = "${module.bastion.ami_image_id}"
-    }
-
-    output "bastion_ami_creation_date" {
-      value = "${module.bastion.ami_creation_date}"
-    }
-
-    output "bastion_ami_name" {
-      value = "${module.bastion.ami_name}"
     }
 
 - - - -
