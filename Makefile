@@ -118,6 +118,10 @@ plan: prep ## Show what terraform thinks it will do
 		-refresh=true \
 		-var-file="$(VARS)"
 
+# https://github.com/terraform-linters/tflint
+lint: prep ## Check for possible errors, best practices, etc in current directory!
+	@tflint
+
 plan-target: prep ## Shows what a plan looks like for applying a specific resource
 	@echo "$(YELLOW)$(BOLD)[INFO]   $(RESET)"; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
 	@read -p "PLAN target: " DATA && \
