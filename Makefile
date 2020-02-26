@@ -118,6 +118,10 @@ plan: prep ## Show what terraform thinks it will do
 		-refresh=true \
 		-var-file="$(VARS)"
 
+# https://github.com/liamg/tfsec
+check-security: prep ## Static analysis of your terraform templates to spot potential security issues.
+	@tfsec .
+
 plan-target: prep ## Shows what a plan looks like for applying a specific resource
 	@echo "$(YELLOW)$(BOLD)[INFO]   $(RESET)"; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
 	@read -p "PLAN target: " DATA && \
