@@ -121,7 +121,12 @@ plan: prep ## Show what terraform thinks it will do
 format: prep ## Rewrites all Terraform configuration files to a canonical format.
 	@terraform fmt \
 		-write=true \
+    -recursive
     
+# https://github.com/terraform-linters/tflint
+lint: prep ## Check for possible errors, best practices, etc in current directory!
+	@tflint
+
 # https://github.com/liamg/tfsec
 check-security: prep ## Static analysis of your terraform templates to spot potential security issues.
 	@tfsec .
