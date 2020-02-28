@@ -122,7 +122,7 @@ format: prep ## Rewrites all Terraform configuration files to a canonical format
 	@terraform fmt \
 		-write=true \
     -recursive
-    
+
 # https://github.com/terraform-linters/tflint
 lint: prep ## Check for possible errors, best practices, etc in current directory!
 	@tflint
@@ -130,6 +130,11 @@ lint: prep ## Check for possible errors, best practices, etc in current director
 # https://github.com/liamg/tfsec
 check-security: prep ## Static analysis of your terraform templates to spot potential security issues.
 	@tfsec .
+
+documentation: prep ## Generate README.md for a module
+	@terraform-docs \
+		markdown table \
+		--sort-by-required  . > README.md
 
 plan-target: prep ## Shows what a plan looks like for applying a specific resource
 	@echo "$(YELLOW)$(BOLD)[INFO]   $(RESET)"; echo "Example to type for the following question: module.rds.aws_route53_record.rds-master"
