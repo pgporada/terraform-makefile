@@ -28,13 +28,13 @@ RESET=$(shell tput sgr0)
 
 # Check for necessary tools
 ifeq (, $(shell which aws))
-    $(error "No aws in $(PATH), go to https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html, pick your OS, and follow the instructions")
+	$(error "No aws in $(PATH), go to https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html, pick your OS, and follow the instructions")
 endif
 ifeq (, $(shell which jq))
-    $(error "No jq in $(PATH), please install jq")
+	$(error "No jq in $(PATH), please install jq")
 endif
 ifeq (, $(shell which terraform))
-    $(error "No terraform in $(PATH), get it from https://www.terraform.io/downloads.html")
+	$(error "No terraform in $(PATH), get it from https://www.terraform.io/downloads.html")
 endif
 
 help:
@@ -132,14 +132,20 @@ plan: prep ## Show what terraform thinks it will do
 format: prep ## Rewrites all Terraform configuration files to a canonical format.
 	@terraform fmt \
 		-write=true \
-    -recursive
+		-recursive
 
 # https://github.com/terraform-linters/tflint
 lint: prep ## Check for possible errors, best practices, etc in current directory!
+	ifeq (, $(shell which tflint))
+		$(error "No tflint in $(PATH), get it from https://github.com/terraform-linters/tflint")
+	endif
 	@tflint
 
 # https://github.com/liamg/tfsec
 check-security: prep ## Static analysis of your terraform templates to spot potential security issues.
+	ifeq (, $(shell which tfsec))
+		$(error "No tfsec in $(PATH), get it from https://github.com/liamg/tfsec")
+	endif
 	@tfsec .
 
 documentation: prep ## Generate README.md for a module
