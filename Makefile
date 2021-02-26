@@ -136,16 +136,10 @@ format: prep ## Rewrites all Terraform configuration files to a canonical format
 
 # https://github.com/terraform-linters/tflint
 lint: prep ## Check for possible errors, best practices, etc in current directory!
-	ifeq (, $(shell which tflint))
-		$(error "No tflint in $(PATH), get it from https://github.com/terraform-linters/tflint")
-	endif
 	@tflint
 
 # https://github.com/liamg/tfsec
 check-security: prep ## Static analysis of your terraform templates to spot potential security issues.
-	ifeq (, $(shell which tfsec))
-		$(error "No tfsec in $(PATH), get it from https://github.com/liamg/tfsec")
-	endif
 	@tfsec .
 
 documentation: prep ## Generate README.md for a module
