@@ -82,14 +82,14 @@ prep: set-env ## Prepare a new workspace (environment) if needed, configure the 
 	 else
 		echo "$(BOLD)$(GREEN)DynamoDB Table $(DYNAMODB_TABLE) exists$(RESET)"; \
 	 fi
-	@aws ec2 --profile=$(AWS_PROFILE) describe-key-pairs | jq -r '.KeyPairs[].KeyName' | grep "$(ENV)_infra_key" > /dev/null 2>&1; \
+	@aws ec2 --profile=$(AWS_PROFILE) --region=$(REGION) describe-key-pairs | jq -r '.KeyPairs[].KeyName' | grep "$(ENV)_infra_key" > /dev/null 2>&1; \
 	if [ $$? -ne 0 ]; then \
-	    echo "$(BOLD)$(RED)EC2 Key Pair $(INFRA_KEY)_infra_key was not found$(RESET)"; \
+	    echo "$(BOLD)$(RED)EC2 Key Pair $(ENV)_infra_key was not found$(RESET)"; \
 	    read -p '$(BOLD)Do you want to generate a new keypair? [y/Y]: $(RESET)' ANSWER && \
     	if [ "$${ANSWER}" == "y" ] || [ "$${ANSWER}" == "Y" ]; then \
 	        mkdir -p ~/.ssh; \
 	        ssh-keygen -t rsa -b 4096 -N '' -f ~/.ssh/$(ENV)_infra_key; \
-        	aws ec2 --profile=$(AWS_PROFILE) import-key-pair --key-name "$(ENV)_infra_key" --public-key-material "file://~/.ssh/$(ENV)_infra_key.pub"; \
+        	aws ec2 --profile=$(AWS_PROFILE) --region=$(REGION) import-key-pair --key-name "$(ENV)_infra_key" --public-key-material "file://~/.ssh/$(ENV)_infra_key.pub"; \
     	fi; \
 	  else \
 	      echo "$(BOLD)$(GREEN)EC2 Key Pair $(ENV)_infra_key exists$(RESET)";\
