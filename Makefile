@@ -26,6 +26,17 @@ GREEN=$(shell tput setaf 2)
 YELLOW=$(shell tput setaf 3)
 RESET=$(shell tput sgr0)
 
+# Check for necessary tools
+ifeq (, $(shell which aws))
+	$(error "No aws in $(PATH), go to https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html, pick your OS, and follow the instructions")
+endif
+ifeq (, $(shell which jq))
+	$(error "No jq in $(PATH), please install jq")
+endif
+ifeq (, $(shell which terraform))
+	$(error "No terraform in $(PATH), get it from https://www.terraform.io/downloads.html")
+endif
+
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
@@ -121,7 +132,7 @@ plan: prep ## Show what terraform thinks it will do
 format: prep ## Rewrites all Terraform configuration files to a canonical format.
 	@terraform fmt \
 		-write=true \
-    -recursive
+		-recursive
 
 # https://github.com/terraform-linters/tflint
 lint: prep ## Check for possible errors, best practices, etc in current directory!
