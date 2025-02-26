@@ -209,3 +209,8 @@ Example `main.tf` inside the tree
 ![Apache-2.0](LICENSE)
 
 (C) [Philip Porada](https://github.com/pgporada/) - philporada@gmail.com
+
+- - - -
+# Similar Projects
+
+- [serpro69/terraform-makefile](https://github.com/serpro69/terraform-makefile) - a terraform makefile for working with Google Cloud Platform
